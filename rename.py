@@ -48,7 +48,7 @@ class Interface(Frame):
             window, text="Rename", command=self.rename)
         self.buttonRename.pack()
 
-    # When you click on the button to change the path
+    # Change the path and list the files on buttonPath click 
     def clickButtonPath(self):
 
         # Remove the checkButton when you change path
@@ -80,7 +80,7 @@ class Interface(Frame):
         for file in self.buttonList:
             file.destroy()
 
-    # Method to rename the check checkButton
+    # Method to rename the files selected
     def rename(self):
         for state in self.buttonState.values():
             print(state.get())
