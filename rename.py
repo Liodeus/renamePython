@@ -2,7 +2,6 @@
 
 # Programme qui renomme tout les fichiers
 # en un nom donner apres avoir donner le path
-# Et faire une interface graphique
 # Faire une sauvegarde de tout les anciens nom
 # dans un fichier texte
 # Bouton pour afficher que les fichiers, dossier ou tout
@@ -10,7 +9,7 @@
 # uname() -> os
 
 
-from os import chdir, listdir, getcwd
+from os import chdir, listdir, getcwd, rename
 from os.path import isfile
 from tkinter import *
 
@@ -43,12 +42,21 @@ class Interface(Frame):
             window, text="Change path", command=self.clickButtonPath)
         self.buttonPath.pack()
 
-        # Button to change path
+        # Button to rename
         self.buttonRename = Button(
-            window, text="Rename", command=self.rename)
+            window, text="Rename", command=self.renameFiles)
         self.buttonRename.pack()
 
-    # Change the path and list the files on buttonPath click 
+        # Change the position 
+        # Label with new files name
+        # self.newNameBox = Label(self, text="New name")
+        # self.newNameBox.pack(side=BOTTOM)
+
+        # Textbox that let you input name to rename all the files
+        self.renameBox = Entry(window, textvariable="", width=30)
+        self.renameBox.pack()
+
+    # Change the path and list the files on buttonPath click
     def clickButtonPath(self):
 
         # Remove the checkButton when you change path
@@ -62,18 +70,7 @@ class Interface(Frame):
             error = "Unknown or non-existent path"
             self.errorMessage["text"] = error
         else:
-            self.fileList = listdir()
-            print(self.fileList)
-
-            self.path["text"] = "Current path : " + getcwd()
-            self.errorMessage["text"] = ""
-
-            for file in self.fileList:
-                self.buttonState[file] = IntVar(value=0)
-                file = Checkbutton(self, text=file,
-                                   variable=self.buttonState[file])
-                file.pack()
-                self.buttonList.append(file)
+            self.showCheckButton()
 
     # Method to remove checkButton
     def removeCheckButton(self):
@@ -81,9 +78,39 @@ class Interface(Frame):
             file.destroy()
 
     # Method to rename the files selected
-    def rename(self):
-        for state in self.buttonState.values():
-            print(state.get())
+    def renameFiles(self):
+        i = 0
+        for key, state in self.buttonState.items():
+            print(key, " = ", state.get())
+            currentPath = "./" + key
+            newName = "./" + self.renameBox.get() + str(i)
+            if(state.get() == 1):
+                print(state.get())
+                print(currentPath)
+                print(newName)
+                rename(currentPath, newName)
+                i += 1
+
+        # Remove the checkButton when the files change names
+        self.removeCheckButton()
+        self.buttonList = list()
+        # Refresh the checkButton
+        self.showCheckButton()
+
+    # Display the checkButton
+    def showCheckButton(self):
+        self.fileList = listdir()
+        print(self.fileList)
+
+        self.path["text"] = "Current path : " + getcwd()
+        self.errorMessage["text"] = ""
+
+        for file in self.fileList:
+            self.buttonState[file] = IntVar(value=0)
+            file = Checkbutton(self, text=file,
+                               variable=self.buttonState[file])
+            file.pack()
+            self.buttonList.append(file)
 
 
 window = Tk()
@@ -92,8 +119,6 @@ interface = Interface(window)
 interface.mainloop()
 interface.destroy()
 
-
-# help("os")
 
 # def choix():
 #     print("Que voulez-vous renommer ? \n")
