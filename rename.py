@@ -5,8 +5,15 @@
 # Faire une sauvegarde de tout les anciens nom
 # dans un fichier texte
 # Bouton pour afficher que les fichiers, dossier ou tout
-
+# Changer de couleur pour diferencier les dossiers et fichiers
 # uname() -> os
+# # Save le noms de tout les fichiers
+# for element in liste_fichiers:
+#     print(element)
+# # Liste avec le nom de tout les files
+# file = [f for f in liste_fichiers if isfile(f)]
+# # Liste avec le nom de tout les Directories
+# directory = [f for f in liste_fichiers if not isfile(f)]
 
 
 from os import chdir, listdir, getcwd, rename
@@ -21,40 +28,43 @@ class Interface(Frame):
     buttonList = list()  # List that contain the checkButton
 
     def __init__(self, window, **kwargs):
-        Frame.__init__(self, window, width=500, height=500, **kwargs)
+        window.minsize(width=350, height=350)
+        Frame.__init__(self, window, **kwargs)
         self.pack(fill=BOTH)
 
         # Label with current path
         currentPath = "Current Path : " + getcwd()
         self.path = Label(self, text=currentPath)
-        self.path.pack()
+        self.path.pack(pady=10)
 
         # Error message shown if an error occur
         self.errorMessage = Label(self, text="")
-        self.errorMessage.pack()
+        self.errorMessage.pack(pady=10)
 
         # Textbox that let you input a path
         self.getPath = Entry(window, textvariable="", width=30)
-        self.getPath.pack()
+        self.getPath.pack(pady=10)
 
         # Button to change path
         self.buttonPath = Button(
             window, text="Change path", command=self.clickButtonPath)
-        self.buttonPath.pack()
+        self.buttonPath.pack(pady=10)
 
         # Button to rename
         self.buttonRename = Button(
             window, text="Rename", command=self.renameFiles)
-        self.buttonRename.pack()
+        self.buttonRename.pack(pady=10)
 
-        # Change the position 
+        # Change the position
         # Label with new files name
         # self.newNameBox = Label(self, text="New name")
-        # self.newNameBox.pack(side=BOTTOM)
+        # self.newNameBox.pack(side=TOP)
 
         # Textbox that let you input name to rename all the files
         self.renameBox = Entry(window, textvariable="", width=30)
-        self.renameBox.pack()
+        self.renameBox.pack(pady=10)
+
+        self.showCheckButton()
 
     # Change the path and list the files on buttonPath click
     def clickButtonPath(self):
@@ -67,6 +77,7 @@ class Interface(Frame):
         try:
             chdir(path)  # Change path
         except FileNotFoundError:
+            self.showCheckButton()
             error = "Unknown or non-existent path"
             self.errorMessage["text"] = error
         else:
@@ -81,62 +92,53 @@ class Interface(Frame):
     def renameFiles(self):
         i = 0
         for key, state in self.buttonState.items():
-            print(key, " = ", state.get())
             currentPath = "./" + key
-            newName = "./" + self.renameBox.get() + str(i)
+            name = self.renameBox.get() + str(i)
+            newName = "./" + name
             if(state.get() == 1):
-                print(state.get())
-                print(currentPath)
-                print(newName)
-                rename(currentPath, newName)
-                i += 1
+                if(name not in self.fileList):
+                    rename(currentPath, newName)
+                    i += 1
+                else:
+                    error = "Unknown or non-existent path"
+                    self.errorMessage["text"] = error
 
         # Remove the checkButton when the files change names
         self.removeCheckButton()
-        self.buttonList = list()
+        self.reset()
         # Refresh the checkButton
         self.showCheckButton()
 
     # Display the checkButton
     def showCheckButton(self):
         self.fileList = listdir()
-        print(self.fileList)
 
         self.path["text"] = "Current path : " + getcwd()
         self.errorMessage["text"] = ""
 
         for file in self.fileList:
+            # Change the color
+            if(isfile(file)):
+                color = 'blue'  # Is a file
+            else:
+                color = 'red'  # Is a directory
+
             self.buttonState[file] = IntVar(value=0)
             file = Checkbutton(self, text=file,
-                               variable=self.buttonState[file])
+                               variable=self.buttonState[file], fg=color, activeforeground=color)
             file.pack()
             self.buttonList.append(file)
 
+    # Reset list and dict -> when you change path or rename
+    def reset(self):
+        self.buttonList = list()
+        self.fileList = list()
+        self.buttonState = {}
+
 
 window = Tk()
+
 interface = Interface(window)
 
 interface.mainloop()
 interface.destroy()
-
-
-# def choix():
-#     print("Que voulez-vous renommer ? \n")
-#     print("1. Les fichiers ")
-#     print("2. Les dossiers ")
-#     print("3. Les deux ")
-#     choix = input("Choix : ")
-#     return choix
-
-# # Save le noms de tout les fichiers
-# for element in liste_fichiers:
-#     print(element)
-
-# # Liste avec le nom de tout les files
-# file = [f for f in liste_fichiers if isfile(f)]
-# # Liste avec le nom de tout les Directories
-# directory = [f for f in liste_fichiers if not isfile(f)]
-
-
-# print(file)
-# print(directory)
