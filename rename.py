@@ -32,6 +32,27 @@ class Interface(Frame):
         Frame.__init__(self, window, **kwargs)
         self.pack(fill=BOTH)
 
+        window.grid_rowconfigure(0, weight=1)
+        window.grid_columnconfigure(0, weight=1)
+
+        #  Ajouter bouton pour trier par ordre alpha
+        choice = StringVar()
+
+        self.All = Radiobutton(window, text="All", variable=choice,
+                               value="All", command=self.All)
+        self.onlyFiles = Radiobutton(window, text="Files",
+                                     variable=choice, value="Files",
+                                     command=self.Files)
+        self.onlyDirectories = Radiobutton(
+            window, text="Directories", variable=choice, value="Directories",
+            command=self.Directories)
+
+        self.All.pack()
+        self.onlyFiles.pack()
+        self.onlyDirectories.pack()
+
+        self.All.select()
+
         # Label with current path
         currentPath = "Current Path : " + getcwd()
         self.path = Label(self, text=currentPath)
@@ -64,7 +85,19 @@ class Interface(Frame):
         self.renameBox = Entry(window, textvariable="", width=30)
         self.renameBox.pack(pady=10)
 
-        self.showCheckButton()
+        self.showCheckButton("All")
+
+    def All(self):
+        self.removeCheckButton()
+        self.showCheckButton("All")
+
+    def Files(self):
+        self.removeCheckButton()
+        self.showCheckButton("Files")
+
+    def Directories(self):
+        self.removeCheckButton()
+        self.showCheckButton("Directories")
 
     # Change the path and list the files on buttonPath click
     def clickButtonPath(self):
@@ -77,11 +110,11 @@ class Interface(Frame):
         try:
             chdir(path)  # Change path
         except FileNotFoundError:
-            self.showCheckButton()
+            self.showCheckButton("All")
             error = "Unknown or non-existent path"
             self.errorMessage["text"] = error
         else:
-            self.showCheckButton()
+            self.showCheckButton("All")
 
     # Method to remove checkButton
     def removeCheckButton(self):
@@ -107,10 +140,10 @@ class Interface(Frame):
         self.removeCheckButton()
         self.reset()
         # Refresh the checkButton
-        self.showCheckButton()
+        self.showCheckButton("All")
 
     # Display the checkButton
-    def showCheckButton(self):
+    def showCheckButton(self, val):
         self.fileList = listdir()
 
         self.path["text"] = "Current path : " + getcwd()
@@ -123,11 +156,31 @@ class Interface(Frame):
             else:
                 color = 'red'  # Is a directory
 
-            self.buttonState[file] = IntVar(value=0)
-            file = Checkbutton(self, text=file,
-                               variable=self.buttonState[file], fg=color, activeforeground=color)
-            file.pack()
-            self.buttonList.append(file)
+            if(val == "All"):
+                self.buttonState[file] = IntVar(value=0)
+                file = Checkbutton(self, text=file,
+                                   variable=self.buttonState[file],
+                                   fg=color, activeforeground=color)
+                file.pack()
+                self.buttonList.append(file)
+            elif(val == "Files"):
+                if(isfile(file)):
+                    self.buttonState[file] = IntVar(value=0)
+                    file = Checkbutton(self, text=file,
+                                       variable=self.buttonState[file],
+                                       fg=color, activeforeground=color)
+                    file.pack()
+                    self.buttonList.append(file)
+            elif(val == "Directories"):
+                if(not isfile(file)):
+                    self.buttonState[file] = IntVar(value=0)
+                    file = Checkbutton(self, text=file,
+                                       variable=self.buttonState[file],
+                                       fg=color, activeforeground=color)
+                    file.pack()
+                    self.buttonList.append(file)
+            else:
+                self.errorMessage["text"] = "Error"
 
     # Reset list and dict -> when you change path or rename
     def reset(self):
